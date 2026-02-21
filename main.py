@@ -59,3 +59,10 @@ def best_guesses(guess, ansewrs):
     result.sort(key=lambda x: x["entropy"], reverse=True)
 
     return result[:20]
+
+def filtration(guess, pattern, words):
+
+    for word in words:
+        if get_pattern(guess, word) != pattern:
+            words.remove(word)
+    return words 
