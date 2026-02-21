@@ -27,6 +27,22 @@ def get_pattern(guess, answer):
     return pattern
 
     
+def calc_entropy(guess, words):
 
+    pattern_count = Counter()
 
+    for word in words:
+        pattern = get_pattern(guess, word)
 
+        pattern_count[pattern] +=1
+
+    entropy = 0
+    length = len(words)
+
+    for count in pattern_count.values():
+
+        p = count / length
+
+        entropy += -p * math.log2(p)
+
+    return entropy
