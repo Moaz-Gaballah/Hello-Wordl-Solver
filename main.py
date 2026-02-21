@@ -62,6 +62,20 @@ def best_guesses(guess, ansewrs):
 
     return result[:20]
 
+def display_guesses():
+    print("/n")
+    print("Rank \t \t \t Word \t \t \t Entropy \t \t \t Possibility")
+
+    guesses = best_guesses
+
+    for i,j in enumerate(guesses):
+        rank = i+1
+        word = j["word"].upper()
+        entropy = j["entropy"]
+        possible = j["possible_Ans"]
+
+        print(f"{rank} \t \t \t {word} \t \t \t {entropy} \t \t \t {possible}")
+
 def filtration(guess, pattern, words):
 
     for word in words:
