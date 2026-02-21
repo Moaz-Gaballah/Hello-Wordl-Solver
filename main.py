@@ -9,6 +9,8 @@ with open("targets_5_letter.json") as file:
     words = json.load(file)
 
 
+# Functions definitions
+
 def get_pattern(guess, answer):
     pattern = ['r', 'r', 'r', 'r', 'r']
 
@@ -66,3 +68,21 @@ def filtration(guess, pattern, words):
         if get_pattern(guess, word) != pattern:
             words.remove(word)
     return words 
+
+def get_input_pattern(guess):
+    print(f"You guessed {guess}")
+    print("Now Enter the pattern (r = grey, y = yellow, g = green)")
+    
+    while True:
+        pattern = input().lower()
+        pattern = list(pattern)
+        check = False
+        if len(pattern) == 5:
+            for char in pattern:
+                if char == 'r' or char == 'g' or char == 'y': check = True
+            if(check): return pattern
+            else: print("Please Enter a valid pattern")
+
+
+# Main loop and execution
+
