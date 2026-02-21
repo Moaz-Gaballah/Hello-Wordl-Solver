@@ -46,3 +46,16 @@ def calc_entropy(guess, words):
         entropy += -p * math.log2(p)
 
     return entropy
+
+def best_guesses(guess, ansewrs):
+    result = []
+
+    for word in guess:
+        entropy = calc_entropy(word,ansewrs)
+        result.append({
+            "word" : word,"entropy": entropy, "possible_Ans": word in ansewrs
+        })
+
+    result.sort(key=lambda x: x["entropy"], reverse=True)
+
+    return result[:20]
