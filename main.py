@@ -1,6 +1,8 @@
 import json
 from collections import Counter
 import math
+import pickle
+import os
 
 
 with open("dictionary_5_letter.json") as file:
@@ -28,34 +30,42 @@ def get_pattern(guess, answer):
 
     return tuple(pattern)
 
+
+
+first_guess_file = "first_guesses.pkl"
+
+if os.path.exists(first_guess_file):
+    print("Loading precomputed first guess rankings...")
+    with open(first_guess_file, "rb") as f:
+        first_guess_ranking = pickle.load(f)
+else:
+    print("Computing first guess rankings...")
+    first_guess_ranking = []
+    for word in dict:
+        pattern_count = Counter(get_pattern(word, answer) for answer in words)
+        total = len(words)
+        entropy = sum(-(c / total) * math.log2(c / total) for c in pattern_count.values())
+        first_guess_ranking.append({
+            "word": word, "entropy": entropy, "possible_Ans": word in words
+        })
+    first_guess_ranking.sort(key=lambda x: x["entropy"], reverse=True)
+    with open(first_guess_file, "wb") as f:
+        pickle.dump(first_guess_ranking, f)
+    
     
 def calc_entropy(guess, words):
 
-    pattern_count = Counter()
+    pattern_count = Counter(get_pattern(guess, word) for word in words)
+    total = len(words)
+    return sum(-(c / total) * math.log2(c / total) for c in pattern_count.values())
 
-    for word in words:
-        pattern = get_pattern(guess, word)
-
-        pattern_count[pattern] +=1
-
-    entropy = 0
-    length = len(words)
-
-    for count in pattern_count.values():
-
-        p = count / length
-
-        entropy += -p * math.log2(p)
-
-    return entropy
-
-def best_guesses(guess, ansewrs):
+def best_guesses(words):
     result = []
 
-    for word in guess:
-        entropy = calc_entropy(word,ansewrs)
+    for word in dict:
+        entropy = calc_entropy(word,words)
         result.append({
-            "word" : word,"entropy": entropy, "possible_Ans": word in ansewrs
+            "word" : word,"entropy": entropy, "possible_Ans": word in words
         })
 
     result.sort(key=lambda x: x["entropy"], reverse=True)
@@ -72,18 +82,17 @@ def display_guesses(guesses):
         entropy = j["entropy"]
         possible = j["possible_Ans"]
 
-        print(f"{rank}. {word} \t entrtopy = {entropy: .3f} \t possibility = {possible}")
+        print(f"{rank:>2}. {word} \t entrtopy = {entropy: .3f}")
 
 def filtration(guess, pattern, words):
 
     return [word for word in words if get_pattern(guess, word) == pattern] 
 
-def get_input_pattern(guess):
-    print(f"You guessed {guess}")
+def get_input_pattern():
     print("Now Enter the pattern (r = grey, y = yellow, g = green)")
     
     while True:
-        pattern = list(input().lower())
+        pattern = list(input(">> ").lower())
         
         if len(pattern) == 5 and all(c in "ryg" for c in pattern):
             return tuple(pattern)
@@ -99,23 +108,29 @@ current_attempt = 0
 while current_attempt < 6:
 
     if(len(words) == 1):
-        print(f"Answer must be {words[0]}")
+        print(f"The Answer is: {words[0]}")
         break
 
-    print(f"===== Round {current_attempt +1} =====")
+    if(current_attempt != 0): print("Calculating best guesses ...")
 
-    print("Calculating best guesses ...")
 
-    display_guesses(best_guesses(dict, words))
+    print(f"============ Round {current_attempt +1} ============")
+
+
+    if current_attempt == 0:
+        display_guesses(first_guess_ranking[:20])
+    else:
+        display_guesses(best_guesses(words))
+
+    print("-" * 36)
 
     while True:
         gussed_word = input("Enter the gussed word: ")
         if gussed_word in dict: break
-    pattern = get_input_pattern(gussed_word)
+    pattern = get_input_pattern()
     words = filtration(gussed_word, pattern, words)
 
     if pattern == ('g', 'g', 'g', 'g', 'g'):
-        print(f"Solved in {current_attempt + 1} attempts!")
         break
 
     current_attempt +=1
