@@ -26,7 +26,7 @@ def get_pattern(guess, answer):
             pattern[i] = 'y'
             answer_trace[answer_trace.index(guess[i])] = None
 
-    return pattern
+    return tuple(pattern)
 
     
 def calc_entropy(guess, words):
@@ -62,11 +62,9 @@ def best_guesses(guess, ansewrs):
 
     return result[:20]
 
-def display_guesses():
-    print("/n")
-    print("Top suggestions:")
+def display_guesses(guesses):
 
-    guesses = best_guesses()
+    print("Top suggestions:")
 
     for i,j in enumerate(guesses):
         rank = i+1
@@ -74,29 +72,50 @@ def display_guesses():
         entropy = j["entropy"]
         possible = j["possible_Ans"]
 
-        print(f"{rank}.  {word}  entrtopy = {entropy} possibility = {possible}")
+        print(f"{rank}. {word} \t entrtopy = {entropy: .3f} \t possibility = {possible}")
 
 def filtration(guess, pattern, words):
 
-    for word in words:
-        if get_pattern(guess, word) != pattern:
-            words.remove(word)
-    return words 
+    return [word for word in words if get_pattern(guess, word) == pattern] 
 
 def get_input_pattern(guess):
     print(f"You guessed {guess}")
     print("Now Enter the pattern (r = grey, y = yellow, g = green)")
     
     while True:
-        pattern = input().lower()
-        pattern = list(pattern)
-        check = False
-        if len(pattern) == 5:
-            for char in pattern:
-                if char == 'r' or char == 'g' or char == 'y': check = True
-            if(check): return pattern
-            else: print("Please Enter a valid pattern")
+        pattern = list(input().lower())
+        
+        if len(pattern) == 5 and all(c in "ryg" for c in pattern):
+            return tuple(pattern)
+        print("Please enter a valid pattern")
 
 
 # Main loop and execution
 
+print("\t\t\t \t \t \t Welcome To Hello Wordl Solver")
+
+current_attempt = 0
+
+while current_attempt < 6:
+
+    if(len(words) == 1):
+        print(f"Answer must be {words[0]}")
+        break
+
+    print(f"===== Round {current_attempt +1} =====")
+
+    print("Calculating best guesses ...")
+
+    display_guesses(best_guesses(dict, words))
+
+    while True:
+        gussed_word = input("Enter the gussed word: ")
+        if gussed_word in dict: break
+    pattern = get_input_pattern(gussed_word)
+    words = filtration(gussed_word, pattern, words)
+
+    if pattern == ('g', 'g', 'g', 'g', 'g'):
+        print(f"Solved in {current_attempt + 1} attempts!")
+        break
+
+    current_attempt +=1
